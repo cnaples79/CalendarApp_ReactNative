@@ -1,22 +1,41 @@
-# AI Calendar Groovy App
+# AI Calendar - React Native
 
-A fully functional AI-powered calendar application built with Groovy and JavaFX that allows users to manage events through both manual interactions and natural language AI commands.
+A mobile calendar application built with React Native and Expo that allows users to manage events through both a rich graphical interface and natural language AI commands. This project is a mobile-first implementation inspired by a desktop version originally built with Groovy and JavaFX.
 
 ## Features
 
 ### Core Calendar Management
-- **Monthly Grid View**: Navigate through months with previous/next buttons
-- **Event Display**: View events directly in calendar cells with detailed information
-- **Day Selection**: Click on any day to view detailed events for that date
+- **Monthly Grid View**: An interactive monthly calendar powered by `react-native-calendars`.
+- **Event Markers**: Days with events are clearly marked on the calendar.
+- **Day Selection**: Tap on any day to see a list of events and a detailed hourly timeline for that date.
 
-### Manual Event Management (CRUD)
-- **Create Events**: Add new events via "New Event" dialog with title, date/time, and description
-- **View Events**: Click on calendar days to see all events for that date
-- **Edit Events**: Modify existing events through dedicated edit dialogs
-- **Delete Events**: Remove events with confirmation dialogs
-- **Real-time Updates**: Calendar view automatically refreshes after any changes
+### Full Event Management (CRUD)
+- **Create Events**: Add new events manually through a dedicated modal form.
+- **View Event Details**: Tap on any event to see a detailed view with its title, description, and time.
+- **Edit Events**: Modify existing events through the same modal form, pre-filled with event data.
+- **Delete Events**: Remove events with a confirmation dialog to prevent accidental deletion.
+- **Real-time Updates**: The calendar and event lists automatically refresh after any changes.
 
 ### AI-Powered Event Management
+- **Chat Interface**: A dedicated chat screen allows you to manage your calendar using natural language.
+- **Create Events with AI**: Simply type commands like "Add a meeting tomorrow at 10am" and the AI will parse the command and create the event for you.
+- **Action-Based AI**: The AI service returns structured commands that the app parses and executes, ensuring reliable actions.
+
+### Daily Timeline
+- **Hourly View**: See your day's schedule at a glance with an hourly timeline that displays all events for the selected day.
+
+## Tech Stack
+- **Framework**: React Native with Expo
+- **Language**: TypeScript
+- **Navigation**: Expo Router
+- **UI Components**: `react-native-calendars` for the main calendar grid.
+- **State Management**: React Hooks (`useState`, `useCallback`, `useFocusEffect`)
+
+## How to Run
+1.  Clone the repository.
+2.  Install dependencies: `npm install`
+3.  Start the development server: `npx expo start`
+4.  Scan the QR code with the Expo Go app on your iOS or Android device.
 - **Natural Language Commands**: Interact with your calendar using conversational AI
 - **AI Event Creation**: Ask the AI to create events (e.g., "Schedule a meeting tomorrow at 2 PM")
 - **AI Event Updates**: Modify existing events through AI commands (e.g., "Change the meeting time to 3 PM")

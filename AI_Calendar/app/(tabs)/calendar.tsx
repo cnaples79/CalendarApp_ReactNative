@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, StyleSheet, Button, ScrollView, FlatList, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, Button, FlatList, Text, TouchableOpacity, Alert } from 'react-native';
 import { Link, useFocusEffect, useRouter } from 'expo-router';
 import CalendarGrid from '../../components/CalendarGrid';
 import DailyTimeline from '../../components/DailyTimeline';
@@ -37,15 +37,22 @@ export default function CalendarScreen() {
     setSelectedDayEvents(events);
   };
 
-  return (
-    <ScrollView style={styles.container}>
+  const renderListHeader = () => (
+    <View>
       <Link href="/event-modal" asChild>
         <Button title="Add New Event" />
       </Link>
       <CalendarGrid markedDates={markedDates} onDayPress={onDayPress} />
-            {selectedDay && <DailyTimeline events={selectedDayEvents} />}
+      {selectedDay && <DailyTimeline events={selectedDayEvents} />}
+      {selectedDayEvents.length > 0 && <Text style={styles.listHeader}>Events for {selectedDay?.dateString}</Text>}
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
       <FlatList
         data={selectedDayEvents}
+        ListHeaderComponent={renderListHeader}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.eventItemContainer}>
@@ -66,15 +73,18 @@ export default function CalendarScreen() {
             }} />
           </View>
         )}
+        ListEmptyComponent={() => (
+          !selectedDay ? <Text style={styles.emptyText}>Select a day to see events.</Text> : null
+        )}
       />
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+    backgroundColor: '#fff',
   },
   eventItemContainer: {
     flexDirection: 'row',
@@ -90,5 +100,20 @@ const styles = StyleSheet.create({
   },
   eventTitle: {
     fontWeight: 'bold',
+  },
+  listHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    padding: 15,
+    backgroundColor: '#f7f7f7',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#888',
   },
 });
