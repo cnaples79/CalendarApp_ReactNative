@@ -19,6 +19,7 @@ const mockEvents: Event[] = [
 
 class CalendarService {
   private events: Event[] = mockEvents;
+  private nextId = 3;
 
   getAllEvents(): Event[] {
     return this.events;
@@ -31,6 +32,39 @@ class CalendarService {
              eventDate.getMonth() === date.getMonth() &&
              eventDate.getDate() === date.getDate();
     });
+  }
+
+  createEvent(title: string, description?: string) {
+    const newEvent: Event = {
+      id: this.nextId.toString(),
+      title,
+      description,
+      startTime: new Date(), // Defaults to now, we'll add a date picker later
+      endTime: new Date(),
+    };
+    this.events.push(newEvent);
+    this.nextId++;
+        return newEvent;
+  }
+
+  getEventById(id: string): Event | undefined {
+    return this.events.find(event => event.id === id);
+  }
+
+  updateEvent(id: string, title: string, description?: string): Event | undefined {
+    const eventIndex = this.events.findIndex(event => event.id === id);
+    if (eventIndex > -1) {
+      const updatedEvent = { ...this.events[eventIndex], title, description };
+      this.events[eventIndex] = updatedEvent;
+      return updatedEvent;
+    }
+    return undefined;
+  }
+
+  deleteEvent(id: string): boolean {
+    const initialLength = this.events.length;
+    this.events = this.events.filter(event => event.id !== id);
+    return this.events.length < initialLength;
   }
 }
 
