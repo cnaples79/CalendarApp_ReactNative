@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { OPENROUTER_API_KEY } from '@env';
+
 
 const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -12,7 +12,7 @@ class AIService {
       const response = await axios.post(
         API_URL,
         {
-          model: 'deepseek/deepseek-coder-v2-lite-instruct',
+          model: 'deepseek/deepseek-r1-0528:free',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: message },
@@ -20,8 +20,10 @@ class AIService {
         },
         {
           headers: {
-            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+            'Authorization': `Bearer ${process.env.EXPO_PUBLIC_OPENROUTER_API_KEY}`,
             'Content-Type': 'application/json',
+            'HTTP-Referer': 'http://localhost:8081',
+            'X-Title': 'AI Calendar RN',
           },
         }
       );
