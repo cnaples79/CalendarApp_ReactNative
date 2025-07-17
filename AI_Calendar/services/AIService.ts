@@ -13,7 +13,6 @@ class AIService {
         baseURL: 'https://openrouter.ai/api/v1',
         apiKey: process.env.EXPO_PUBLIC_OPENROUTER_API_KEY,
         defaultHeaders: {
-          'HTTP-Referer': 'http://localhost:8081', // Optional
           'X-Title': 'AI Calendar RN', // Optional
         },
         dangerouslyAllowBrowser: true, // Required for client-side usage
