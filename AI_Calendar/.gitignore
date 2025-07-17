@@ -33,6 +33,9 @@ yarn-error.*
 # local env files
 .env*.local
 .env
+AI_Calendar/.env
+/AI_Calendar/.env
+
 
 # typescript
 *.tsbuildinfo
