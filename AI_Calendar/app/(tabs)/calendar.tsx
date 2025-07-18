@@ -14,7 +14,7 @@ export default function CalendarScreen() {
   const [selectedDay, setSelectedDay] = useState<DateData | null>(null);
   const router = useRouter();
 
-  const fetchData = useCallback(() => {
+  const fetchData = () => {
     const events = CalendarService.getAllEvents();
     setAllEvents(events);
 
@@ -24,7 +24,7 @@ export default function CalendarScreen() {
       newMarkedDates[dateString] = { marked: true, dotColor: 'blue' };
     });
     setMarkedDates(newMarkedDates);
-  }, []);
+  };
 
   useFocusEffect(fetchData);
 
