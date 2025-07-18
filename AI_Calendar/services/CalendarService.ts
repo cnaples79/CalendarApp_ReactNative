@@ -26,11 +26,13 @@ class CalendarService {
   }
 
   getEventsForDate(date: Date): Event[] {
+    const selectedDate = new Date(date);
+    selectedDate.setHours(0, 0, 0, 0);
+
     return this.events.filter(event => {
       const eventDate = new Date(event.startTime);
-      return eventDate.getFullYear() === date.getFullYear() &&
-             eventDate.getMonth() === date.getMonth() &&
-             eventDate.getDate() === date.getDate();
+      eventDate.setHours(0, 0, 0, 0);
+      return eventDate.getTime() === selectedDate.getTime();
     });
   }
 

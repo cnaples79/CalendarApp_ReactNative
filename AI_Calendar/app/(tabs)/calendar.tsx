@@ -30,7 +30,8 @@ export default function CalendarScreen() {
 
   const selectedDayEvents = useMemo(() => {
     if (!selectedDay) return [];
-    return CalendarService.getEventsForDate(new Date(selectedDay.dateString));
+    // Appending 'T00:00:00' ensures the date is parsed in the local timezone, not UTC
+    return CalendarService.getEventsForDate(new Date(`${selectedDay.dateString}T00:00:00`));
   }, [selectedDay, allEvents]);
 
   const onDayPress = (day: DateData) => {
