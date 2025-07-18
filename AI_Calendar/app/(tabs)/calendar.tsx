@@ -8,6 +8,13 @@ import { Event } from '../../types/Event';
 import { DateData } from 'react-native-calendars';
 import { MarkingProps } from 'react-native-calendars/src/calendar/day/marking';
 
+const toLocalDateKey = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const da = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${da}`;
+};
+
 export default function CalendarScreen() {
   const [markedDates, setMarkedDates] = useState<{ [key: string]: MarkingProps }>({});
   const [allEvents, setAllEvents] = useState<Event[]>([]);
@@ -21,7 +28,7 @@ export default function CalendarScreen() {
 
       const newMarkedDates: { [key: string]: MarkingProps } = {};
       events.forEach(event => {
-        const dateString = event.startTime.toISOString().split('T')[0];
+        const dateString = toLocalDateKey(event.startTime);
         newMarkedDates[dateString] = { marked: true, dotColor: 'blue' };
       });
       setMarkedDates(newMarkedDates);
@@ -81,7 +88,7 @@ export default function CalendarScreen() {
                 
                     const newMarkedDates: { [key: string]: MarkingProps } = {};
                     events.forEach(event => {
-                      const dateString = event.startTime.toISOString().split('T')[0];
+                      const dateString = toLocalDateKey(event.startTime);
                       newMarkedDates[dateString] = { marked: true, dotColor: 'blue' };
                     });
                     setMarkedDates(newMarkedDates);
