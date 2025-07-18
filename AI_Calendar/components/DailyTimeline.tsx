@@ -51,7 +51,6 @@ const DailyTimeline: React.FC<DailyTimelineProps> = ({ events }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    flex: 1,
   },
   title: {
     fontSize: 18,
@@ -59,7 +58,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   timelineContainer: {
-    flex: 1,
+    minHeight: 1200, // Provides enough space for all 24 hours
   },
   timeSlot: {
     flexDirection: 'row',
