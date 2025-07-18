@@ -57,9 +57,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
   },
-  timelineContainer: {
-    minHeight: 1200, // Provides enough space for all 24 hours
-  },
+  timelineContainer: {},
+
   timeSlot: {
     flexDirection: 'row',
     marginBottom: 10,

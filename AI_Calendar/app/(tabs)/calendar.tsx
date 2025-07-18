@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, StyleSheet, Button, FlatList, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, Button, ScrollView, Text, TouchableOpacity, Alert } from 'react-native';
 import { Link, useFocusEffect, useRouter } from 'expo-router';
 import CalendarGrid from '../../components/CalendarGrid';
 import DailyTimeline from '../../components/DailyTimeline';
@@ -50,35 +50,47 @@ export default function CalendarScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={selectedDayEvents}
-        ListHeaderComponent={renderListHeader}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.eventItemContainer}>
-            <TouchableOpacity 
-              style={styles.eventTouchable}
-              onPress={() => router.push({ pathname: '/modal/event-details', params: { eventId: item.id } })}>
-              <Text style={styles.eventTitle}>{item.title}</Text>
-              {item.description && <Text>{item.description}</Text>}
-            </TouchableOpacity>
-            <Button title="Delete" color="red" onPress={() => {
-              Alert.alert('Delete Event', 'Are you sure you want to delete this event?', [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Delete', style: 'destructive', onPress: () => {
-                  CalendarService.deleteEvent(item.id);
-                  fetchData(); // Refresh UI
-                }},
-              ]);
-            }} />
-          </View>
-        )}
-        ListEmptyComponent={() => (
-          !selectedDay ? <Text style={styles.emptyText}>Select a day to see events.</Text> : null
-        )}
-      />
-    </View>
+    <ScrollView style={styles.container}>
+      <Link href="/event-modal" asChild>
+        <Button title="Add New Event" />
+      </Link>
+      <CalendarGrid markedDates={markedDates} onDayPress={onDayPress} />
+      
+      {selectedDay && <DailyTimeline events={selectedDayEvents} />}
+
+      {selectedDayEvents.length > 0 && (
+        <View>
+          <Text style={styles.listHeader}>Events for {selectedDay?.dateString}</Text>
+          {selectedDayEvents.map(item => (
+            <View key={item.id} style={styles.eventItemContainer}>
+              <TouchableOpacity 
+                style={styles.eventTouchable}
+                onPress={() => router.push({ pathname: '/modal/event-details', params: { eventId: item.id } })}>
+                <Text style={styles.eventTitle}>{item.title}</Text>
+                {item.description && <Text>{item.description}</Text>}
+              </TouchableOpacity>
+              <Button title="Delete" color="red" onPress={() => {
+                Alert.alert('Delete Event', 'Are you sure you want to delete this event?', [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Delete', style: 'destructive', onPress: () => {
+                    CalendarService.deleteEvent(item.id);
+                    fetchData(); // Refresh UI
+                  }},
+                ]);
+              }} />
+            </View>
+          ))}
+        </View>
+      )}
+
+      {selectedDay && selectedDayEvents.length === 0 && (
+        <Text style={styles.emptyText}>No events for this day.</Text>
+      )}
+
+      {!selectedDay && (
+        <Text style={styles.emptyText}>Select a day to see events.</Text>
+      )}
+    </ScrollView>
   );
 }
 
