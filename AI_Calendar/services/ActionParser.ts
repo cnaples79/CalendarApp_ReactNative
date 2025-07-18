@@ -19,7 +19,8 @@ class ActionParser {
       paramPairs.forEach(pair => {
         const [key, value] = pair.split('=');
         if (key && value) {
-          params[key.trim()] = value.trim();
+          // Remove quotes from the parsed value
+          params[key.trim()] = value.trim().replace(/^"|"$/g, '');
         }
       });
     }
@@ -34,13 +35,11 @@ class ActionParser {
   async execute(action: Action): Promise<string> {
     switch (action.type) {
       case 'CREATE_EVENT':
-        const { title, description } = action.params;
-        if (!title) {
-          return 'I need a title to create an event.';
+        const { title, startTime, endTime, description } = action.params;
+        if (!title || !startTime || !endTime) {
+          return 'I need a title, start time, and end time to create an event.';
         }
-        // Note: Date/time parsing from natural language is a complex feature
-        // we will add later. For now, we create it for the current day.
-        CalendarService.createEvent(title, description);
+        CalendarService.createEvent(title, startTime, endTime, description);
         return `OK, I've added "${title}" to your calendar.`;
       default:
         return 'Sorry, I can\'t perform that action.';

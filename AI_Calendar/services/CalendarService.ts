@@ -34,13 +34,13 @@ class CalendarService {
     });
   }
 
-  createEvent(title: string, description?: string) {
+  createEvent(title: string, startTime: string, endTime: string, description?: string) {
     const newEvent: Event = {
       id: this.nextId.toString(),
       title,
       description,
-      startTime: new Date(), // Defaults to now, we'll add a date picker later
-      endTime: new Date(),
+      startTime: new Date(startTime),
+      endTime: new Date(endTime),
     };
     this.events.push(newEvent);
     this.nextId++;

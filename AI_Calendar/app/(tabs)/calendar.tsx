@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, StyleSheet, Button, FlatList, Text, TouchableOpacity, Alert } from 'react-native';
 import { Link, useFocusEffect, useRouter } from 'expo-router';
 import CalendarGrid from '../../components/CalendarGrid';
@@ -10,31 +10,31 @@ import { MarkingProps } from 'react-native-calendars/src/calendar/day/marking';
 
 export default function CalendarScreen() {
   const [markedDates, setMarkedDates] = useState<{ [key: string]: MarkingProps }>({});
-  const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
-    const [selectedDay, setSelectedDay] = useState<DateData | null>(null);
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const [selectedDay, setSelectedDay] = useState<DateData | null>(null);
   const router = useRouter();
 
   const fetchData = useCallback(() => {
-    const allEvents = CalendarService.getAllEvents();
+    const events = CalendarService.getAllEvents();
+    setAllEvents(events);
+
     const newMarkedDates: { [key: string]: MarkingProps } = {};
-    allEvents.forEach(event => {
+    events.forEach(event => {
       const dateString = event.startTime.toISOString().split('T')[0];
       newMarkedDates[dateString] = { marked: true, dotColor: 'blue' };
     });
     setMarkedDates(newMarkedDates);
-
-    if (selectedDay) {
-      const eventsForDay = CalendarService.getEventsForDate(new Date(selectedDay.dateString));
-      setSelectedDayEvents(eventsForDay);
-    }
-  }, [selectedDay]);
+  }, []);
 
   useFocusEffect(fetchData);
 
+  const selectedDayEvents = useMemo(() => {
+    if (!selectedDay) return [];
+    return CalendarService.getEventsForDate(new Date(selectedDay.dateString));
+  }, [selectedDay, allEvents]);
+
   const onDayPress = (day: DateData) => {
     setSelectedDay(day);
-    const events = CalendarService.getEventsForDate(new Date(day.dateString));
-    setSelectedDayEvents(events);
   };
 
   const renderListHeader = () => (
