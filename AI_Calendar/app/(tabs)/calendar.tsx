@@ -14,19 +14,19 @@ export default function CalendarScreen() {
   const [selectedDay, setSelectedDay] = useState<DateData | null>(null);
   const router = useRouter();
 
-  const fetchData = () => {
-    const events = CalendarService.getAllEvents();
-    setAllEvents(events);
+  useFocusEffect(
+    useCallback(() => {
+      const events = CalendarService.getAllEvents();
+      setAllEvents(events);
 
-    const newMarkedDates: { [key: string]: MarkingProps } = {};
-    events.forEach(event => {
-      const dateString = event.startTime.toISOString().split('T')[0];
-      newMarkedDates[dateString] = { marked: true, dotColor: 'blue' };
-    });
-    setMarkedDates(newMarkedDates);
-  };
-
-  useFocusEffect(fetchData);
+      const newMarkedDates: { [key: string]: MarkingProps } = {};
+      events.forEach(event => {
+        const dateString = event.startTime.toISOString().split('T')[0];
+        newMarkedDates[dateString] = { marked: true, dotColor: 'blue' };
+      });
+      setMarkedDates(newMarkedDates);
+    }, [])
+  );
 
   const selectedDayEvents = useMemo(() => {
     if (!selectedDay) return [];
@@ -74,7 +74,17 @@ export default function CalendarScreen() {
                   { text: 'Cancel', style: 'cancel' },
                   { text: 'Delete', style: 'destructive', onPress: () => {
                     CalendarService.deleteEvent(item.id);
-                    fetchData(); // Refresh UI
+                    // The useFocusEffect will re-run when we return to the screen, refreshing the data.
+                    // To force an immediate update, we can manually update state here.
+                    const events = CalendarService.getAllEvents();
+                    setAllEvents(events);
+                
+                    const newMarkedDates: { [key: string]: MarkingProps } = {};
+                    events.forEach(event => {
+                      const dateString = event.startTime.toISOString().split('T')[0];
+                      newMarkedDates[dateString] = { marked: true, dotColor: 'blue' };
+                    });
+                    setMarkedDates(newMarkedDates);
                   }},
                 ]);
               }} />
