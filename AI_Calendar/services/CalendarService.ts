@@ -17,9 +17,24 @@ const mockEvents: Event[] = [
   },
 ];
 
+type Subscriber = () => void;
+
 class CalendarService {
   private events: Event[] = mockEvents;
   private nextId = 3;
+  private subscribers: Subscriber[] = [];
+
+  subscribe(callback: Subscriber) {
+    this.subscribers.push(callback);
+  }
+
+  unsubscribe(callback: Subscriber) {
+    this.subscribers = this.subscribers.filter(sub => sub !== callback);
+  }
+
+  private notify() {
+    this.subscribers.forEach(callback => callback());
+  }
 
   getAllEvents(): Event[] {
     return this.events;
@@ -46,7 +61,33 @@ class CalendarService {
     };
     this.events.push(newEvent);
     this.nextId++;
-        return newEvent;
+    this.notify();
+    return newEvent;
+  }
+
+  findEventsByTitle(titleQuery: string): Event[] {
+    const lowercasedQuery = titleQuery.toLowerCase();
+    return this.events.filter(event => event.title.toLowerCase().includes(lowercasedQuery));
+  }
+
+  updateEventByTitle(titleQuery: string, updates: Partial<Event>): Event | undefined {
+    const eventToUpdate = this.findEventsByTitle(titleQuery)[0];
+    if (eventToUpdate) {
+      Object.assign(eventToUpdate, updates);
+      this.notify();
+      return eventToUpdate;
+    }
+    return undefined;
+  }
+
+  deleteEventByTitle(titleQuery: string): boolean {
+    const eventToDelete = this.findEventsByTitle(titleQuery)[0];
+    if (eventToDelete) {
+      this.events = this.events.filter(event => event.id !== eventToDelete.id);
+      this.notify();
+      return true;
+    }
+    return false;
   }
 
   getEventById(id: string): Event | undefined {
@@ -58,6 +99,7 @@ class CalendarService {
     if (eventIndex > -1) {
       const updatedEvent = { ...this.events[eventIndex], title, description };
       this.events[eventIndex] = updatedEvent;
+      this.notify();
       return updatedEvent;
     }
     return undefined;
@@ -66,8 +108,10 @@ class CalendarService {
   deleteEvent(id: string): boolean {
     const initialLength = this.events.length;
     this.events = this.events.filter(event => event.id !== id);
+    this.notify();
     return this.events.length < initialLength;
   }
 }
 
-export default new CalendarService();
+const calendarService = new CalendarService();
+export default calendarService;

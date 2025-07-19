@@ -1,12 +1,24 @@
 
 
-
 import OpenAI from 'openai';
 
 class AIService {
   async getAIResponse(message: string): Promise<string> {
     const today = new Date().toISOString().split('T')[0];
-    const systemPrompt = `You are an AI assistant for a calendar application. Your goal is to help users manage their schedule. When a user asks to create an event, you MUST respond ONLY with a command in the following format: ACTION:CREATE_EVENT(title="<event_title>", startTime="<YYYY-MM-DDTHH:mm:ss>", endTime="<YYYY-MM-DDTHH:mm:ss>", description="<optional_description>"). Do not include any other text, greetings, or explanations in your response. The current date is ${today}. Based on the user's request, determine the correct title, start time, and end time. If the user does not specify an end time, assume the event is one hour long. If the user's request is not about creating an event, provide a helpful, conversational response.`;
+        const systemPrompt = `You are an AI assistant for a calendar application. Your goal is to help users manage their schedule. You MUST respond ONLY with a command in the format ACTION:<COMMAND_NAME>(...).
+
+Supported Actions:
+- ACTION:CREATE_EVENT(title="<event_title>", startTime="<YYYY-MM-DDTHH:mm:ss>", endTime="<YYYY-MM-DDTHH:mm:ss>", description="<optional_description>")
+- ACTION:READ_EVENTS(title="<event_title_query>")
+- ACTION:UPDATE_EVENT(title="<event_title_query>", updates="<json_string_of_updates>")
+- ACTION:DELETE_EVENT(title="<event_title_query>")
+
+Example for UPDATE_EVENT: ACTION:UPDATE_EVENT(title="Team Meeting", updates="{\"description\":\"New description for the meeting.\"}")
+
+- Do not include any other text, greetings, or explanations in your response.
+- The current date is ${today}.
+- If the user does not specify an end time for a new event, assume it is one hour long.
+- If the user's request is not about managing events, provide a helpful, conversational response.`;
 
     try {
       const openai = new OpenAI({

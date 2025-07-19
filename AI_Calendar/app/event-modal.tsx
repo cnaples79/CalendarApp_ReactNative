@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import CalendarService from '../services/CalendarService';
+import calendarService from '../services/CalendarService';
 
 export default function EventModal() {
   const [title, setTitle] = useState('');
@@ -12,7 +12,7 @@ export default function EventModal() {
 
   useEffect(() => {
     if (eventId) {
-      const event = CalendarService.getEventById(eventId);
+      const event = calendarService.getEventById(eventId as string);
       if (event) {
         setTitle(event.title);
         setDescription(event.description || '');
@@ -27,9 +27,11 @@ export default function EventModal() {
     }
 
     if (eventId) {
-      CalendarService.updateEvent(eventId, title, description);
+      // Note: Manual update doesn't support changing time yet.
+            calendarService.updateEvent(eventId as string, title, description);
     } else {
-      CalendarService.createEvent(title, description);
+      const now = new Date();
+            calendarService.createEvent(title, now.toISOString(), now.toISOString(), description);
     }
     router.back();
   };
