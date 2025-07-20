@@ -71,7 +71,9 @@ class CalendarService {
   }
 
   updateEventByTitle(titleQuery: string, updates: Partial<Event>): Event | undefined {
-    const eventToUpdate = this.findEventsByTitle(titleQuery)[0];
+    const eventToUpdate = this.events.find(
+      event => event.title.toLowerCase().includes(titleQuery.toLowerCase())
+    );
     if (eventToUpdate) {
       Object.assign(eventToUpdate, updates);
       this.notify();
