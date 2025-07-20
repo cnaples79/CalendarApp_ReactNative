@@ -1,90 +1,100 @@
+import { Event } from '../types/Event';
 import calendarService from './CalendarService';
 
-import { Event } from '../types/Event';
-
+// Defines the structure of a parsed AI command
 interface Action {
-  type: 'CREATE_EVENT' | 'READ_EVENTS' | 'UPDATE_EVENT' | 'DELETE_EVENT';
+  command: 'CREATE_EVENT' | 'READ_EVENTS' | 'UPDATE_EVENT' | 'DELETE_EVENT';
   params: { [key: string]: any };
 }
 
 class ActionParser {
-  parse(actionString: string): Action | null {
-    const match = actionString.match(/^ACTION:([A-Z_]+)\((.*)\)$/);
-    if (!match) return null;
+  // Tries to parse a raw text response from the AI into a structured Action
+  static parse(text: string): Action | null {
+    const match = text.match(/ACTION:(\w+)\((.*)\)/s); // Use 's' flag for dotall
+    if (!match) {
+      return null;
+    }
 
-    const type = match[1];
-    const paramsString = match[2];
-    const params: { [key: string]: string } = {};
+    const [, command, paramsStr] = match;
+    const params: { [key: string]: any } = {};
 
-    if (paramsString) {
-      const paramPairs = paramsString.split(/,\s*/);
-      paramPairs.forEach(pair => {
-        const [key, value] = pair.split('=');
-        if (key && value) {
-          // Remove quotes from the parsed value
-          params[key.trim()] = value.trim().replace(/^"|"$/g, '');
+    try {
+      if (paramsStr) {
+        // This regex handles key="value" pairs, including escaped quotes within the value.
+        const paramRegex = /(\w+)="((?:\\"|[^"])*)"/g;
+        let paramMatch;
+        while ((paramMatch = paramRegex.exec(paramsStr)) !== null) {
+          // The value is the second capture group, unescape quotes
+          params[paramMatch[1]] = paramMatch[2].replace(/\\"/g, '"');
         }
-      });
+      }
+    } catch (e) {
+      console.error('Failed to parse action parameters:', e);
+      return null; // Don't proceed if params are malformed
     }
 
-    if (type === 'CREATE_EVENT') {
-      return { type, params };
-    }
-
-    return null;
+    return {
+      command: command as Action['command'],
+      params,
+    };
   }
 
-  async execute(action: Action): Promise<string> {
-    switch (action.type) {
+  // Executes the parsed action by calling the appropriate service
+  static async execute(action: Action): Promise<string | Event[]> {
+    switch (action.command) {
       case 'CREATE_EVENT': {
         const { title, startTime, endTime, description } = action.params;
         if (title && startTime && endTime) {
-          calendarService.createEvent(title, startTime, endTime, description);
+          calendarService.createEvent(title, startTime, endTime, description || '');
           return 'Event created successfully.';
         } else {
-          throw new Error('Missing parameters for CREATE_EVENT');
+          return 'Create event failed: Missing required parameters.';
         }
       }
+
       case 'READ_EVENTS': {
         const { title } = action.params;
-        if (title) {
-          const events = calendarService.findEventsByTitle(title);
-          if (events.length === 0) {
-            return 'No events found with that title.';
-          }
-          const eventList = events.map(e => `- ${e.title} at ${new Date(e.startTime).toLocaleString()}`).join('\n');
-          return `Found ${events.length} event(s):\n${eventList}`;
-        } else {
-          throw new Error('Missing title parameter for READ_EVENTS');
-        }
+        // If title is an empty string or undefined, find all events.
+        const events = (title && title.length > 0) ? calendarService.findEventsByTitle(title) : calendarService.getAllEvents();
+        return events;
       }
+
       case 'UPDATE_EVENT': {
         const { title, updates } = action.params;
-        if (title && updates) {
-          try {
-            const parsedUpdates = JSON.parse(updates);
-            const updatedEvent = calendarService.updateEventByTitle(title, parsedUpdates);
-            return updatedEvent ? 'Event updated successfully.' : 'Event not found.';
-          } catch (error) {
-            throw new Error('Invalid JSON format for updates parameter.');
+        if (!title || !updates) {
+          return 'Update failed: Missing title or update information.';
+        }
+        try {
+          const parsedUpdates = JSON.parse(updates);
+          
+          if (parsedUpdates.startTime) {
+            parsedUpdates.startTime = new Date(parsedUpdates.startTime);
           }
-        } else {
-          throw new Error('Missing parameters for UPDATE_EVENT');
+          if (parsedUpdates.endTime) {
+            parsedUpdates.endTime = new Date(parsedUpdates.endTime);
+          }
+
+          const success = calendarService.updateEventByTitle(title, parsedUpdates);
+          return success ? `Event '${title}' updated successfully.` : `Could not find an event with the title '${title}'.`;
+        } catch (e) {
+          console.error('Failed to parse updates for UPDATE_EVENT:', e);
+          return 'There was an error updating the event. The update details were not formatted correctly.';
         }
       }
+
       case 'DELETE_EVENT': {
         const { title } = action.params;
-        if (title) {
-          const success = calendarService.deleteEventByTitle(title);
-          return success ? 'Event deleted successfully.' : 'Event not found.';
-        } else {
-          throw new Error('Missing title parameter for DELETE_EVENT');
+        if (!title) {
+            return 'Delete failed: Missing title information.';
         }
+        const success = calendarService.deleteEventByTitle(title);
+        return success ? `Event '${title}' deleted successfully.` : `Could not find an event with the title '${title}'.`;
       }
+
       default:
-        return 'Sorry, I can\'t perform that action.';
+        return `Unknown command: ${action.command}`;
     }
   }
 }
 
-export default new ActionParser();
+export default ActionParser;
